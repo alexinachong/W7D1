@@ -19428,6 +19428,7 @@ var todosReducer = function todosReducer() {
       });
       return newState;
     case _todo_actions.RECEIVE_TODO:
+
       var newObj = {};
       newObj[action.todo.id] = action.todo;
       console.log();
@@ -22456,8 +22457,7 @@ var App = function App() {
   return _react2.default.createElement(
     'div',
     null,
-    _react2.default.createElement(_todo_list_container2.default, null),
-    _react2.default.createElement(_todo_form2.default, null)
+    _react2.default.createElement(_todo_list_container2.default, null)
   );
 };
 
@@ -24376,10 +24376,6 @@ var _selectors2 = _interopRequireDefault(_selectors);
 
 var _todo_actions = __webpack_require__(52);
 
-var _todo_list_item = __webpack_require__(174);
-
-var _todo_list_item2 = _interopRequireDefault(_todo_list_item);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var mapStateToProps = function mapStateToProps(state) {
@@ -24396,7 +24392,7 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch) {
   };
 };
 
-var TodoListContainer = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(_todo_list_item2.default);
+var TodoListContainer = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(_todo_list2.default);
 
 exports.default = TodoListContainer;
 
@@ -24415,11 +24411,36 @@ var _todo_form = __webpack_require__(175);
 
 var _todo_form2 = _interopRequireDefault(_todo_form);
 
+var _util = __webpack_require__(176);
+
+var _todo_list_item = __webpack_require__(174);
+
+var _todo_list_item2 = _interopRequireDefault(_todo_list_item);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (props) {
-  return _react2.default.createElement(_todo_form2.default, null);
+  console.log(props);
+  return (
+    // items
+    _react2.default.createElement(
+      'div',
+      null,
+      _react2.default.createElement(
+        'ul',
+        null,
+        props.todos.map(function (todo, i) {
+          return (
+            // how do we include an id?
+            _react2.default.createElement(_todo_list_item2.default, { key: (0, _util.uniqueId)() * todo.id, todo: todo })
+          );
+        })
+      ),
+      _react2.default.createElement(_todo_form2.default, { receiveTodo: props.receiveTodo })
+    )
+  );
 };
+// import { receiveTodo } from '../../actions/todo_actions';
 
 /***/ }),
 /* 174 */
@@ -24456,22 +24477,16 @@ var TodoListItem = function (_React$Component) {
   function TodoListItem(props) {
     _classCallCheck(this, TodoListItem);
 
-    return _possibleConstructorReturn(this, (TodoListItem.__proto__ || Object.getPrototypeOf(TodoListItem)).call(this));
+    return _possibleConstructorReturn(this, (TodoListItem.__proto__ || Object.getPrototypeOf(TodoListItem)).call(this, props));
   }
 
   _createClass(TodoListItem, [{
     key: 'render',
     value: function render() {
       return _react2.default.createElement(
-        'ul',
+        'li',
         null,
-        this.props.todos.map(function (todo, i) {
-          return _react2.default.createElement(
-            'li',
-            { key: i },
-            todo.title
-          );
-        })
+        this.props.todo.title
       );
     }
   }]);
@@ -24498,7 +24513,11 @@ var _react = __webpack_require__(4);
 
 var _react2 = _interopRequireDefault(_react);
 
+var _util = __webpack_require__(176);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -24512,34 +24531,63 @@ var ToDoForm = function (_React$Component) {
   function ToDoForm(props) {
     _classCallCheck(this, ToDoForm);
 
-    var _this = _possibleConstructorReturn(this, (ToDoForm.__proto__ || Object.getPrototypeOf(ToDoForm)).call(this));
+    var _this = _possibleConstructorReturn(this, (ToDoForm.__proto__ || Object.getPrototypeOf(ToDoForm)).call(this, props));
 
     _this.state = {
       title: "",
       body: "",
       done: false
     };
+    _this.handleSubmit = _this.handleSubmit.bind(_this);
     return _this;
   }
 
   _createClass(ToDoForm, [{
-    key: "render",
+    key: 'updateTodo',
+    value: function updateTodo(property) {
+      var _this2 = this;
+
+      return function (e) {
+        return _this2.setState(_defineProperty({}, property, e.target.value));
+      };
+    }
+  }, {
+    key: 'handleSubmit',
+    value: function handleSubmit(e) {
+      e.preventDefault();
+      var todo = Object.assign({}, this.state, { id: (0, _util.uniqueId)() });
+      // why is receiveTodo on props? Where does it come from?
+      console.log(todo);
+      this.props.receiveTodo(todo);
+      this.setState({
+        title: '',
+        body: '',
+        done: false
+      });
+    }
+  }, {
+    key: 'render',
     value: function render() {
       return _react2.default.createElement(
-        "form",
-        null,
+        'form',
+        { onSubmit: this.handleSubmit },
         _react2.default.createElement(
-          "label",
-          { htmlFor: "title" },
-          "Title"
+          'label',
+          { htmlFor: 'title' },
+          'Title'
         ),
-        _react2.default.createElement("input", { type: "text", id: "title" }),
+        _react2.default.createElement('input', { id: 'title', type: 'text', value: this.state.title, onChange: this.updateTodo('title') }),
         _react2.default.createElement(
-          "label",
-          { htmlFor: "body" },
-          "Body"
+          'label',
+          { htmlFor: 'body' },
+          'Body'
         ),
-        _react2.default.createElement("input", { type: "text", id: "body" })
+        _react2.default.createElement('input', { id: 'body', type: 'text', value: this.state.body, onChange: this.updateTodo('body') }),
+        _react2.default.createElement(
+          'button',
+          null,
+          'Submit'
+        )
       );
     }
   }]);
@@ -24548,6 +24596,20 @@ var ToDoForm = function (_React$Component) {
 }(_react2.default.Component);
 
 exports.default = ToDoForm;
+
+/***/ }),
+/* 176 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var uniqueId = exports.uniqueId = function uniqueId() {
+  return new Date().getTime();
+};
 
 /***/ })
 /******/ ]);
